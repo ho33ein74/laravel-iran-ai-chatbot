@@ -16,6 +16,20 @@
         "illuminate/http": "^10.0|^11.0",
         "guzzlehttp/guzzle": "^7.2"
     },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Unixscript\\IranAiChatbot\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Unixscript\\IranAiChatbot\\Tests\\": "tests/"
+        }
+    },
     "autoload": {
         "psr-4": {
             "Unixscript\\IranAiChatbot\\": "src/"
