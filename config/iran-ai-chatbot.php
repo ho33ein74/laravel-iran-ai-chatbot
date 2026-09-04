@@ -14,7 +14,17 @@ return [
     'models_search' => [
         'max_results' => env('IRAN_AI_SEARCH_LIMIT', 4),
         'searchable_models' => [
-            // \App\Models\Product::class => ['columns' => ['title', 'description'], 'label' => 'محصول'],
+            //\App\Models\Product::class => [
+           //    'columns' => ['title', 'description'],
+           //    'label' => 'محصول',
+           //    'url_template' => '/products/{id}' // <--- این خط اضافه شد
+           //],
+            // مثلا برای مقالات:
+            // \App\Models\Article::class => [
+            //     'columns' => ['title', 'body'],
+            //     'label' => 'مقاله',
+            //     'url_template' => '/blog/post/{id}'
+            // ],
         ]
     ],
 

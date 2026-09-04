@@ -8,8 +8,10 @@ class GapGptDriver implements AiDriverInterface {
     public function __construct(array $config) { $this->config = $config; }
 
     public function ask(string $prompt, array $history = []): string {
+
         $response = Http::withToken($this->config['api_key'])
             ->timeout(60)
+            ->withoutVerifying()
             ->post($this->config['endpoint'], [
                 'model' => $this->config['model'] ?? 'gpt-4o-mini',
                 'messages' => array_merge($history, [['role' => 'user', 'content' => $prompt]])

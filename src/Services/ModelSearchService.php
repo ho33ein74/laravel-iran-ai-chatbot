@@ -34,7 +34,19 @@ class ModelSearchService {
 
             foreach ($records as $record) {
                 $title = $record->title ?? $record->name ?? 'مورد یافت شده';
-                $results[] = ['title' => $title, 'type' => $label, 'id' => $record->id];
+
+                // خواندن الگوی آدرس از کانفیگ (اگر تنظیم نکرده بود، میره صفحه اصلی)
+                $urlTemplate = $config['url_template'] ?? '/';
+
+                // جایگذاری آیدی محصول/مقاله به جای عبارت {id} و ساخت لینک کامل
+                $finalUrl = url(str_replace('{id}', $record->id, $urlTemplate));
+
+                $results[] = [
+                    'title' => $title,
+                    'type'  => $label,
+                    'id'    => $record->id,
+                    'url'   => $finalUrl
+                ];
             }
         }
         return $results;
