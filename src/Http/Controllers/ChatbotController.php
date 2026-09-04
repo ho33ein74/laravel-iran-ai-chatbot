@@ -38,6 +38,8 @@ class ChatbotController extends Controller {
         return response()->json([
             'bot_name' => AiSetting::val('ui.bot_name', config('iran-ai-chatbot.ui.bot_name')),
             'primary_color' => AiSetting::val('ui.primary_color', config('iran-ai-chatbot.ui.primary_color')),
+            'display_mode' => AiSetting::val('ui.default_display_mode', config('iran-ai-chatbot.ui.default_display_mode', 'popup')),
+            'layout' => AiSetting::val('ui.default_layout', config('iran-ai-chatbot.ui.default_layout', 'bubble')),
             'auth_required' => AiSetting::val('features.auth_required', config('iran-ai-chatbot.features.auth_required')),
             'is_logged_in' => !is_null($user),
         ]);
@@ -67,7 +69,7 @@ class ChatbotController extends Controller {
             return response()->json(['reply' => 'درخواست شما ثبت شد. به زودی پشتیبان پاسخ می‌دهد.'])->cookie('chat_session_id', $sessionId, 60*24*30);
         }
 
-        if (AiSetting::val('features.direct_db_suggest', true)) {
+        if (AiSetting::val('features.direct_db_suggest', config('iran-ai-chatbot.features.direct_db_suggest'))) {
             $dbResults = $dbSearch->searchStructured($message);
             if (!empty($dbResults)) {
                 AiChatHistory::create(['user_id' => $user?->id, 'session_id' => $sessionId, 'user_message' => $message, 'bot_reply' => 'پیشنهاد کالا/مقاله (DB)']);
