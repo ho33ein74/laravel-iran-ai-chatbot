@@ -1,7 +1,7 @@
 <?php
 return [
     'default_driver' => env('IRAN_AI_DRIVER', 'gapgpt'),
-    
+
     'features' => [
         'rag_enabled' => env('IRAN_AI_RAG_ENABLED', true),
         'pii_masking' => env('IRAN_AI_PII_MASKING', true),
@@ -35,10 +35,10 @@ return [
 
     'drivers' => [
         'avalai' => ['api_key' => env('AVALAI_API_KEY'), 'endpoint' => 'https://api.avalai.ir/v1/chat/completions', 'model' => 'avalai-turtle'],
-        'gapgpt' => ['api_key' => env('GAPGPT_API_KEY'), 'endpoint' => env('GAPGPT_ENDPOINT', 'https://api.gapgpt.app/v1/chat/completions'), 'model' => env('GAPGPT_MODEL', 'gpt-4o-mini')],
+        'gapgpt' => ['api_key' => env('GAPGPT_API_KEY'), 'endpoint' => 'https://api.gapgpt.app/v1/chat/completions', 'model' => 'glm-4-flash'],
         'openai' => ['api_key' => env('OPENAI_API_KEY'), 'endpoint' => 'https://api.openai.com/v1/chat/completions', 'model' => 'gpt-4o-mini'],
         'gemini' => ['api_key' => env('GEMINI_API_KEY'), 'endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'],
-        'local_offline' => ['endpoint' => env('LOCAL_AI_ENDPOINT', 'http://localhost:11434/api/generate'), 'model' => env('LOCAL_AI_MODEL', 'llama3')],
+        'local_offline' => ['endpoint' => env('LOCAL_AI_ENDPOINT', 'http://localhost:11434/api/generate'), 'model' => 'llama3'],
     ],
 
     'ui' => [
