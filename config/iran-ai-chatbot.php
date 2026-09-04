@@ -1,40 +1,40 @@
 <?php
 return [
-    'default_driver' => env('IRAN_AI_DRIVER', 'avalai'),
+    'default_driver' => env('IRAN_AI_DRIVER', 'gapgpt'),
     
     'features' => [
-        'rag_enabled' => true,
-        'pii_masking' => true, 
-        'prompt_injection_protection' => true, 
-        'moderation' => true,
-        'direct_db_suggest' => true,
+        'rag_enabled' => env('IRAN_AI_RAG_ENABLED', true),
+        'pii_masking' => env('IRAN_AI_PII_MASKING', true),
+        'prompt_injection_protection' => env('IRAN_AI_PROMPT_INJECTION', true),
+        'moderation' => env('IRAN_AI_MODERATION', true),
+        'direct_db_suggest' => env('IRAN_AI_MODELS_SEARCH', true),
         'auth_required' => env('IRAN_AI_AUTH_REQUIRED', false),
     ],
 
     'models_search' => [
-        'max_results' => 4, 
+        'max_results' => env('IRAN_AI_SEARCH_LIMIT', 4),
         'searchable_models' => [
             // \App\Models\Product::class => ['columns' => ['title', 'description'], 'label' => 'محصول'],
         ]
     ],
 
     'quota' => [
-        'enabled' => true,
-        'max_questions_per_user' => 20,
+        'enabled' => env('IRAN_AI_QUOTA_ENABLED', true),
+        'max_questions_per_user' => env('IRAN_AI_MAX_QUESTIONS', 20),
     ],
 
     'drivers' => [
         'avalai' => ['api_key' => env('AVALAI_API_KEY'), 'endpoint' => 'https://api.avalai.ir/v1/chat/completions', 'model' => 'avalai-turtle'],
-        'gapgpt' => ['api_key' => env('GAPGPT_API_KEY'), 'endpoint' => 'https://api.gapgpt.ir/v1/chat'],
+        'gapgpt' => ['api_key' => env('GAPGPT_API_KEY'), 'endpoint' => env('GAPGPT_ENDPOINT', 'https://api.gapgpt.app/v1/chat/completions'), 'model' => env('GAPGPT_MODEL', 'gpt-4o-mini')],
         'openai' => ['api_key' => env('OPENAI_API_KEY'), 'endpoint' => 'https://api.openai.com/v1/chat/completions', 'model' => 'gpt-4o-mini'],
         'gemini' => ['api_key' => env('GEMINI_API_KEY'), 'endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'],
-        'local_offline' => ['endpoint' => env('LOCAL_AI_ENDPOINT', 'http://localhost:11434/api/generate'), 'model' => 'llama3'],
+        'local_offline' => ['endpoint' => env('LOCAL_AI_ENDPOINT', 'http://localhost:11434/api/generate'), 'model' => env('LOCAL_AI_MODEL', 'llama3')],
     ],
 
     'ui' => [
-        'primary_color' => '#3b82f6',
-        'bot_name' => 'دستیار هوشمند یونیکس',
-        'default_display_mode' => 'popup', 
-        'default_layout' => 'bubble', 
+        'primary_color' => env('IRAN_AI_UI_COLOR', '#1a56db'),
+        'bot_name' => env('IRAN_AI_BOT_NAME', 'دستیار هوشمند'),
+        'default_display_mode' => 'popup',
+        'default_layout' => 'bubble',
     ]
 ];

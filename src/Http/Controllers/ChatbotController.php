@@ -1,5 +1,6 @@
 <?php
 namespace Unixscript\IranAiChatbot\Http\Controllers;
+
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,14 +16,30 @@ use Illuminate\Support\Str;
 
 class ChatbotController extends Controller {
     
-    public function getSettings() {
+    /**
+     * بررسی هوشمند و داینامیک وضعیت کاربری
+     */
+    private function resolveUser(Request $request) {
+        if ($request->user()) return $request->user();
+
+        $guards = ['sanctum', 'api', 'web'];
+        foreach ($guards as $guard) {
+            // فقط گاردهایی که در لاراول دیفاین شده‌اند را چک کن
+            if (config()->has("auth.guards.{$guard}") && Auth::guard($guard)->check()) {
+                return Auth::guard($guard)->user();
+            }
+        }
+        return null;
+    }
+
+    public function getSettings(Request $request) {
+        $user = $this->resolveUser($request);
+
         return response()->json([
-            'bot_name' => AiSetting::val('ui.bot_name', 'دستیار هوشمند پرس یار'),
-            'primary_color' => AiSetting::val('ui.primary_color', '#3b82f6'),
-            'display_mode' => AiSetting::val('ui.default_display_mode', 'popup'), 
-            'layout_mode' => AiSetting::val('ui.default_layout', 'bubble'),
-            'auth_required' => AiSetting::val('features.auth_required', false),
-            'is_logged_in' => Auth::guard(config('auth.defaults.guard', 'web'))->check() || Auth::guard('api')->check() || Auth::guard('sanctum')->check(),
+            'bot_name' => AiSetting::val('ui.bot_name', config('iran-ai-chatbot.ui.bot_name')),
+            'primary_color' => AiSetting::val('ui.primary_color', config('iran-ai-chatbot.ui.primary_color')),
+            'auth_required' => AiSetting::val('features.auth_required', config('iran-ai-chatbot.features.auth_required')),
+            'is_logged_in' => !is_null($user),
         ]);
     }
 
@@ -31,14 +48,10 @@ class ChatbotController extends Controller {
         $sessionId = $request->cookie('chat_session_id') ?? (string) Str::uuid();
         $message = $request->message;
 
-        $isLoggedIn = Auth::guard(config('auth.defaults.guard', 'web'))->check() || Auth::guard('api')->check() || Auth::guard('sanctum')->check();
+        $user = $this->resolveUser($request);
+        $isLoggedIn = !is_null($user);
         
-        $user = null;
-        if ($isLoggedIn) {
-             $user = Auth::guard('api')->user() ?? Auth::guard('sanctum')->user() ?? Auth::guard('web')->user() ?? $request->user();
-        }
-        
-        $authRequired = AiSetting::val('features.auth_required', false);
+        $authRequired = AiSetting::val('features.auth_required', config('iran-ai-chatbot.features.auth_required'));
 
         if ($authRequired && !$isLoggedIn) {
             return response()->json(['reply' => 'برای استفاده از گفتگو باید وارد حساب کاربری خود شوید.', 'needs_login' => true], 401);
@@ -51,7 +64,7 @@ class ChatbotController extends Controller {
 
         if ($this->wantsHuman($message)) {
             $escalation->assignToAdmin($user, $sessionId, $message);
-            return response()->json(['reply' => 'درخواست ثبت شد. به زودی پشتیبان پاسخ می‌دهد.'])->cookie('chat_session_id', $sessionId, 60*24*30);
+            return response()->json(['reply' => 'درخواست شما ثبت شد. به زودی پشتیبان پاسخ می‌دهد.'])->cookie('chat_session_id', $sessionId, 60*24*30);
         }
 
         if (AiSetting::val('features.direct_db_suggest', true)) {
@@ -64,6 +77,7 @@ class ChatbotController extends Controller {
 
         $reply = $aiManager->driver()->ask($message);
         AiChatHistory::create(['user_id' => $user?->id, 'session_id' => $sessionId, 'user_message' => $message, 'bot_reply' => $reply]);
+
         return response()->json(['reply' => $reply])->cookie('chat_session_id', $sessionId, 60*24*30);
     }
     
