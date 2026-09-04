@@ -33,7 +33,7 @@ return [
 
     'ui' => [
         'primary_color' => '#3b82f6',
-        'bot_name' => 'دستیار هوشمند پرس یار',
+        'bot_name' => 'دستیار هوشمند یونیکس',
         'default_display_mode' => 'popup', 
         'default_layout' => 'bubble', 
     ]
