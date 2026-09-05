@@ -7,4 +7,4 @@ Route::prefix('api/ai-chatbot')
     ->group(function () {
         Route::post('/chat', [ChatbotController::class, 'sendMessage'])->middleware('ai.quota');
         Route::post('/clear', [ChatbotController::class, 'clearChat']);
-    });
+});

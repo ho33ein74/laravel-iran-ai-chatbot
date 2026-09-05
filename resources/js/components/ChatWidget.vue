@@ -1,6 +1,6 @@
 <template>
-  <div class="porsyar-ai-wrapper" :style="cssVars" dir="rtl">
-    <button v-if="!isOpen && !inline" @click="isOpen = true" :class="['porsyar-fab', `pos-${position}`]">
+  <div class="iran-ai-chatbot-ai-wrapper" :style="cssVars" dir="rtl">
+    <button v-if="!isOpen && !inline" @click="isOpen = true" :class="['iran-ai-chatbot-fab', `pos-${position}`]">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
            stroke-linejoin="round">
         <path
@@ -8,8 +8,8 @@
       </svg>
     </button>
     <div v-show="isOpen || inline"
-         :class="['porsyar-chat-container', inline ? 'porsyar-inline' : displayModeClass, `pos-${position}`]">
-      <div class="porsyar-header">
+         :class="['iran-ai-chatbot-chat-container', inline ? 'iran-ai-chatbot-inline' : displayModeClass, `pos-${position}`]">
+      <div class="iran-ai-chatbot-header">
         <div class="p-header-info">
           <div class="p-avatar">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -37,14 +37,14 @@
         </div>
       </div>
 
-      <div v-if="needsLoginNotice" class="porsyar-login-notice">
+      <div v-if="needsLoginNotice" class="iran-ai-chatbot-login-notice">
         {{ loginText }} <a :href="loginUrl">{{ loginLinkText }}</a>
       </div>
 
-      <div class="porsyar-body" ref="chatContainer">
+      <div class="iran-ai-chatbot-body" ref="chatContainer">
         <div v-for="(msg, index) in messages" :key="index"
-             :class="['porsyar-msg-wrapper', msg.isUser ? 'user' : 'bot']">
-          <div class="porsyar-bubble">
+             :class="['iran-ai-chatbot-msg-wrapper', msg.isUser ? 'user' : 'bot']">
+          <div class="iran-ai-chatbot-bubble">
             <span v-if="!msg.isUser && msg.isTyping" class="p-typing-cursor"
                   v-html="formatText(msg.displayedText)"></span>
             <span v-else v-html="formatText(msg.text)"></span>
@@ -52,7 +52,7 @@
           </div>
 
           <!-- اسلایدر افقی نتایج جستجو -->
-          <div v-if="msg.suggestions && msg.suggestions.length > 0" class="porsyar-suggestions-slider">
+          <div v-if="msg.suggestions && msg.suggestions.length > 0" class="iran-ai-chatbot-suggestions-slider">
             <a v-for="sug in msg.suggestions"
                :key="sug.id"
                :href="sug.url || '#'"
@@ -76,12 +76,12 @@
             </a>
           </div>
         </div>
-        <div v-if="isLoading" class="porsyar-msg-wrapper bot">
-          <div class="porsyar-bubble typing-dots"><span></span><span></span><span></span></div>
+        <div v-if="isLoading" class="iran-ai-chatbot-msg-wrapper bot">
+          <div class="iran-ai-chatbot-bubble typing-dots"><span></span><span></span><span></span></div>
         </div>
       </div>
 
-      <div class="porsyar-footer">
+      <div class="iran-ai-chatbot-footer">
         <button class="p-mic-btn" title="ارسال صدا" @click="alertFunc">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z"></path>
@@ -146,9 +146,9 @@ const needsLoginNotice = ref(false);
 const cssVars = computed(() => ({'--primary-color': props.color}));
 
 const displayModeClass = computed(() => {
-  if (props.displayMode === 'sidebar') return 'porsyar-sidebar';
-  if (props.displayMode === 'fullscreen') return 'porsyar-fullscreen';
-  return 'porsyar-popup';
+  if (props.displayMode === 'sidebar') return 'iran-ai-chatbot-sidebar';
+  if (props.displayMode === 'fullscreen') return 'iran-ai-chatbot-fullscreen';
+  return 'iran-ai-chatbot-popup';
 });
 
 const alertFunc = () => alert(props.voiceAlertText);
@@ -248,16 +248,16 @@ const sendMessage = async () => {
 </script>
 
 <style scoped>
-.porsyar-ai-wrapper {
+.iran-ai-chatbot-ai-wrapper {
   font-family: inherit;
   box-sizing: border-box;
 }
 
-.porsyar-ai-wrapper * {
+.iran-ai-chatbot-ai-wrapper * {
   box-sizing: inherit;
 }
 
-.porsyar-fab {
+.iran-ai-chatbot-fab {
   position: fixed;
   bottom: 24px;
   z-index: 9999;
@@ -275,31 +275,31 @@ const sendMessage = async () => {
   transition: transform 0.2s;
 }
 
-.porsyar-fab.pos-right {
+.iran-ai-chatbot-fab.pos-right {
   right: 24px;
 }
 
-.porsyar-fab.pos-left {
+.iran-ai-chatbot-fab.pos-left {
   left: 24px;
 }
 
-.porsyar-fab:hover {
+.iran-ai-chatbot-fab:hover {
   transform: scale(1.05);
 }
 
-.porsyar-fab svg {
+.iran-ai-chatbot-fab svg {
   width: 30px;
   height: 30px;
 }
 
-.porsyar-chat-container {
+.iran-ai-chatbot-chat-container {
   background: #f9fafb;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.porsyar-popup {
+.iran-ai-chatbot-popup {
   position: fixed;
   bottom: 95px;
   z-index: 9999;
@@ -310,15 +310,15 @@ const sendMessage = async () => {
   border: 1px solid #e5e7eb;
 }
 
-.porsyar-popup.pos-right {
+.iran-ai-chatbot-popup.pos-right {
   right: 24px;
 }
 
-.porsyar-popup.pos-left {
+.iran-ai-chatbot-popup.pos-left {
   left: 24px;
 }
 
-.porsyar-sidebar {
+.iran-ai-chatbot-sidebar {
   position: fixed;
   bottom: 0;
   top: 0;
@@ -330,15 +330,15 @@ const sendMessage = async () => {
   border: none;
 }
 
-.porsyar-sidebar.pos-right {
+.iran-ai-chatbot-sidebar.pos-right {
   right: 0;
 }
 
-.porsyar-sidebar.pos-left {
+.iran-ai-chatbot-sidebar.pos-left {
   left: 0;
 }
 
-.porsyar-fullscreen {
+.iran-ai-chatbot-fullscreen {
   position: fixed;
   bottom: 0;
   right: 0;
@@ -351,7 +351,7 @@ const sendMessage = async () => {
   border: none;
 }
 
-.porsyar-inline {
+.iran-ai-chatbot-inline {
   width: 100%;
   height: 600px;
   border-radius: 16px;
@@ -360,26 +360,26 @@ const sendMessage = async () => {
 }
 
 @media (max-width: 480px) {
-  .porsyar-popup {
+  .iran-ai-chatbot-popup {
     width: 90%;
     bottom: 85px;
     height: 500px;
   }
 
-  .porsyar-popup.pos-right {
+  .iran-ai-chatbot-popup.pos-right {
     right: 5%;
   }
 
-  .porsyar-popup.pos-left {
+  .iran-ai-chatbot-popup.pos-left {
     left: 5%;
   }
 
-  .porsyar-sidebar {
+  .iran-ai-chatbot-sidebar {
     width: 100vw;
   }
 }
 
-.porsyar-header {
+.iran-ai-chatbot-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -458,7 +458,7 @@ const sendMessage = async () => {
   height: 20px;
 }
 
-.porsyar-body {
+.iran-ai-chatbot-body {
   flex: 1;
   padding: 16px;
   overflow-y: auto;
@@ -468,21 +468,21 @@ const sendMessage = async () => {
   background: #f3f4f6;
 }
 
-.porsyar-msg-wrapper {
+.iran-ai-chatbot-msg-wrapper {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-.porsyar-msg-wrapper.user {
+.iran-ai-chatbot-msg-wrapper.user {
   align-items: flex-end;
 }
 
-.porsyar-msg-wrapper.bot {
+.iran-ai-chatbot-msg-wrapper.bot {
   align-items: flex-start;
 }
 
-.porsyar-bubble {
+.iran-ai-chatbot-bubble {
   max-width: 85%;
   padding: 12px 16px;
   border-radius: 16px;
@@ -492,13 +492,13 @@ const sendMessage = async () => {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.porsyar-msg-wrapper.user .porsyar-bubble {
+.iran-ai-chatbot-msg-wrapper.user .iran-ai-chatbot-bubble {
   background: #dbeafe;
   color: #1e3a8a;
   border-bottom-right-radius: 4px;
 }
 
-.porsyar-msg-wrapper.bot .porsyar-bubble {
+.iran-ai-chatbot-msg-wrapper.bot .iran-ai-chatbot-bubble {
   background: #ffffff;
   color: #1f2937;
   border-bottom-left-radius: 4px;
@@ -518,7 +518,7 @@ const sendMessage = async () => {
   animation: p-blink 1s step-end infinite;
 }
 
-.porsyar-suggestions-slider {
+.iran-ai-chatbot-suggestions-slider {
   margin-top: 12px;
   display: flex;
   flex-direction: row;
@@ -531,11 +531,11 @@ const sendMessage = async () => {
   scrollbar-color: #d1d5db transparent;
 }
 
-.porsyar-suggestions-slider::-webkit-scrollbar {
+.iran-ai-chatbot-suggestions-slider::-webkit-scrollbar {
   height: 4px;
 }
 
-.porsyar-suggestions-slider::-webkit-scrollbar-thumb {
+.iran-ai-chatbot-suggestions-slider::-webkit-scrollbar-thumb {
   background: #d1d5db;
   border-radius: 4px;
 }
@@ -611,7 +611,7 @@ const sendMessage = async () => {
   overflow: hidden;
 }
 
-.porsyar-footer {
+.iran-ai-chatbot-footer {
   padding: 12px;
   background: white;
   border-top: 1px solid #e5e7eb;
@@ -680,7 +680,7 @@ const sendMessage = async () => {
   height: 18px;
 }
 
-.porsyar-login-notice {
+.iran-ai-chatbot-login-notice {
   background: #fefce8;
   color: #854d0e;
   padding: 10px;
@@ -689,7 +689,7 @@ const sendMessage = async () => {
   border-bottom: 1px solid #fef08a;
 }
 
-.porsyar-login-notice a {
+.iran-ai-chatbot-login-notice a {
   color: var(--primary-color);
   font-weight: bold;
   text-decoration: underline;

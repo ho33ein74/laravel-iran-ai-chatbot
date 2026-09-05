@@ -11,7 +11,6 @@ use Unixscript\IranAiChatbot\Services\Guardrails\PromptInjectionDetector;
 use Unixscript\IranAiChatbot\Services\ModerationService;
 use Unixscript\IranAiChatbot\Services\ModelSearchService;
 use Unixscript\IranAiChatbot\Models\AiChatHistory;
-use Unixscript\IranAiChatbot\Models\AiSetting;
 use Illuminate\Support\Str;
 
 class ChatbotController extends Controller {
@@ -36,11 +35,11 @@ class ChatbotController extends Controller {
         $user = $this->resolveUser($request);
 
         return response()->json([
-            'bot_name' => AiSetting::val('ui.bot_name', config('iran-ai-chatbot.ui.bot_name')),
-            'primary_color' => AiSetting::val('ui.primary_color', config('iran-ai-chatbot.ui.primary_color')),
-            'display_mode' => AiSetting::val('ui.default_display_mode', config('iran-ai-chatbot.ui.default_display_mode', 'popup')),
-            'layout' => AiSetting::val('ui.default_layout', config('iran-ai-chatbot.ui.default_layout', 'bubble')),
-            'auth_required' => AiSetting::val('features.auth_required', config('iran-ai-chatbot.features.auth_required')),
+            'bot_name' => config('iran-ai-chatbot.ui.bot_name'),
+            'primary_color' => config('iran-ai-chatbot.ui.primary_color'),
+            'display_mode' => config('iran-ai-chatbot.ui.default_display_mode', 'popup'),
+            'layout' => config('iran-ai-chatbot.ui.default_layout', 'bubble'),
+            'auth_required' => config('iran-ai-chatbot.features.auth_required'),
             'is_logged_in' => !is_null($user),
         ]);
     }
@@ -53,7 +52,7 @@ class ChatbotController extends Controller {
         $user = $this->resolveUser($request);
         $isLoggedIn = !is_null($user);
         
-        $authRequired = AiSetting::val('features.auth_required', config('iran-ai-chatbot.features.auth_required'));
+        $authRequired = config('iran-ai-chatbot.features.auth_required');
 
         if ($authRequired && !$isLoggedIn) {
             return response()->json(['reply' => 'برای استفاده از گفتگو باید وارد حساب کاربری خود شوید.', 'needs_login' => true], 401);
@@ -69,7 +68,7 @@ class ChatbotController extends Controller {
             return response()->json(['reply' => 'درخواست شما ثبت شد. به زودی پشتیبان پاسخ می‌دهد.'])->cookie('chat_session_id', $sessionId, 60*24*30);
         }
 
-        if (AiSetting::val('features.direct_db_suggest', config('iran-ai-chatbot.features.direct_db_suggest'))) {
+        if (config('iran-ai-chatbot.features.direct_db_suggest')) {
             $dbResults = $dbSearch->searchStructured($message);
             if (!empty($dbResults)) {
                 AiChatHistory::create(['user_id' => $user?->id, 'session_id' => $sessionId, 'user_message' => $message, 'bot_reply' => 'پیشنهاد کالا/مقاله (DB)']);
