@@ -1,81 +1,139 @@
 <template>
   <div class="porsyar-ai-wrapper" :style="cssVars" dir="rtl">
     <button v-if="!isOpen && !inline" @click="isOpen = true" :class="['porsyar-fab', `pos-${position}`]">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round">
+        <path
+            d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+      </svg>
     </button>
-    <div v-show="isOpen || inline" :class="['porsyar-chat-container', inline ? 'porsyar-inline' : displayModeClass, `pos-${position}`]">
+    <div v-show="isOpen || inline"
+         :class="['porsyar-chat-container', inline ? 'porsyar-inline' : displayModeClass, `pos-${position}`]">
       <div class="porsyar-header">
         <div class="p-header-info">
           <div class="p-avatar">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
           </div>
           <div class="p-title-box">
-            <h3 class="p-title">{{ finalBotName }}</h3>
+            <h3 class="p-title">{{ title }}</h3>
             <p class="p-subtitle"><span class="p-dot"></span> آنلاین و آماده پاسخگویی</p>
           </div>
         </div>
         <div class="p-header-actions">
-          <button @click="clearChat" title="پاک کردن تاریخچه"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
-          <button v-if="!inline" @click="isOpen = false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg></button>
+          <button @click="clearChat" title="پاک کردن تاریخچه">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+          </button>
+          <button v-if="!inline" @click="isOpen = false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"></path>
+            </svg>
+          </button>
         </div>
       </div>
+
       <div v-if="needsLoginNotice" class="porsyar-login-notice">
-        برای استفاده از این بخش باید ابتدا <a href="/login">وارد سایت</a> شوید.
+        {{ loginText }} <a :href="loginUrl">{{ loginLinkText }}</a>
       </div>
+
       <div class="porsyar-body" ref="chatContainer">
-        <div v-if="messages.length === 0" class="porsyar-empty">
-          <p>سلام! 👋 به گفتگوی هوشمند خوش آمدید. سوالی دارید از من بپرسید!</p>
-        </div>
-        <div v-for="(msg, index) in messages" :key="index" :class="['porsyar-msg-wrapper', msg.isUser ? 'user' : 'bot']">
+        <div v-for="(msg, index) in messages" :key="index"
+             :class="['porsyar-msg-wrapper', msg.isUser ? 'user' : 'bot']">
           <div class="porsyar-bubble">
-            <span v-if="!msg.isUser && msg.isTyping" class="p-typing-cursor" v-html="formatText(msg.displayedText)"></span>
+            <span v-if="!msg.isUser && msg.isTyping" class="p-typing-cursor"
+                  v-html="formatText(msg.displayedText)"></span>
             <span v-else v-html="formatText(msg.text)"></span>
             <div class="p-time">{{ msg.time }}</div>
           </div>
 
-          <!-- بخش کارت‌های نتایج جستجو که جایگزین شد -->
-          <div v-if="msg.suggestions && msg.suggestions.length > 0" class="porsyar-suggestions-cards">
+          <!-- اسلایدر افقی نتایج جستجو -->
+          <div v-if="msg.suggestions && msg.suggestions.length > 0" class="porsyar-suggestions-slider">
             <a v-for="sug in msg.suggestions"
                :key="sug.id"
                :href="sug.url || '#'"
                target="_blank"
-               class="p-card-item">
-              <div class="p-card-content">
+               class="p-card-carousel">
+
+              <div class="p-card-img-wrapper">
+                <img v-if="sug.image" :src="sug.image" :alt="sug.title" class="p-card-img"/>
+                <div v-else class="p-card-placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div class="p-card-info">
                 <span class="p-card-badge">{{ sug.type }}</span>
                 <span class="p-card-title">{{ sug.title }}</span>
               </div>
-              <div class="p-card-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-              </div>
             </a>
           </div>
-
         </div>
         <div v-if="isLoading" class="porsyar-msg-wrapper bot">
           <div class="porsyar-bubble typing-dots"><span></span><span></span><span></span></div>
         </div>
       </div>
+
       <div class="porsyar-footer">
-        <button class="p-mic-btn" title="ارسال صدا" @click="alertFunc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z"></path><path d="M19 10v2a7 7 0 01-14 0v-2M12 18.4v3.3M8 22h8"></path></svg></button>
-        <input v-model="input" @keyup.enter="sendMessage" type="text" :disabled="needsLoginNotice" class="p-input" placeholder="پیام خود را بنویسید...">
-        <button @click="sendMessage" :disabled="!input.trim() || needsLoginNotice" :class="['p-send-btn', (input.trim() && !needsLoginNotice) ? 'active' : '']"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+        <button class="p-mic-btn" title="ارسال صدا" @click="alertFunc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z"></path>
+            <path d="M19 10v2a7 7 0 01-14 0v-2M12 18.4v3.3M8 22h8"></path>
+          </svg>
+        </button>
+        <input v-model="input" @keyup.enter="sendMessage" type="text" :disabled="needsLoginNotice" class="p-input"
+               :placeholder="placeholderText">
+        <button @click="sendMessage" :disabled="!input.trim() || needsLoginNotice"
+                :class="['p-send-btn', (input.trim() && !needsLoginNotice) ? 'active' : '']">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, computed } from 'vue';
+import {ref, onMounted, nextTick, computed} from 'vue';
 import axios from 'axios';
 
 axios.defaults.withCredentials = true;
 
 const props = defineProps({
-  apiEndpoint: { type: String, default: '/api/ai-chatbot' },
-  inline: { type: Boolean, default: false },
-  color: { type: String, default: '' },
-  title: { type: String, default: '' },
-  position: { type: String, default: 'right' }
+  // تنظیمات اصلی و ظاهری
+  apiEndpoint: {type: String, default: '/api/ai-chatbot'},
+  inline: {type: Boolean, default: false},
+  color: {type: String, default: '#1a56db'},
+  title: {type: String, default: 'دستیار هوشمند'},
+  position: {type: String, default: 'right'},
+  displayMode: {type: String, default: 'popup'}, // popup | sidebar | fullscreen
+
+  // متون نمایشی (کاملاً داینامیک)
+  initialMessage: {type: String, default: '👋 سلام! به گفتگوی هوشمند خوش آمدید. سوالی دارید از من بپرسید!'},
+  placeholderText: {type: String, default: 'پیام خود را بنویسید...'},
+  voiceAlertText: {type: String, default: 'سرویس پردازش صدا به زودی فعال می‌شود.'},
+
+  // متون مربوط به لاگین
+  loginText: {type: String, default: 'برای استفاده از این بخش باید ابتدا'},
+  loginLinkText: {type: String, default: 'وارد سایت شوید'},
+  loginUrl: {type: String, default: '/login'},
+
+  // پیام‌های سیستم و خطاها
+  clearConfirmText: {type: String, default: 'آیا از پاک کردن تاریخچه گفتگو مطمئن هستید؟'},
+  historyClearedText: {type: String, default: 'تاریخچه پاک شد.'},
+  noResponseText: {type: String, default: 'پاسخی دریافت نشد.'},
+  rateLimitText: {type: String, default: 'سقف مجاز روزانه پر شده است.'},
+  errorText: {type: String, default: 'خطا در ارتباط. لطفا دوباره تلاش کنید.'},
+  authErrorText: {type: String, default: 'برای ادامه باید وارد حساب کاربری خود شوید.'}
 });
 
 const isOpen = ref(false);
@@ -84,54 +142,62 @@ const input = ref('');
 const chatContainer = ref(null);
 const messages = ref([]);
 const needsLoginNotice = ref(false);
-const displayMode = ref('popup');
 
-const apiSettings = ref({ bot_name: 'دستیار هوشمند', primary_color: '#1a56db' });
-
-const cssVars = computed(() => { return { '--primary-color': props.color || apiSettings.value.primary_color }; });
-const finalBotName = computed(() => props.title || apiSettings.value.bot_name);
+const cssVars = computed(() => ({'--primary-color': props.color}));
 
 const displayModeClass = computed(() => {
-  if (displayMode.value === 'sidebar') return 'porsyar-sidebar';
-  if (displayMode.value === 'fullscreen') return 'porsyar-fullscreen';
+  if (props.displayMode === 'sidebar') return 'porsyar-sidebar';
+  if (props.displayMode === 'fullscreen') return 'porsyar-fullscreen';
   return 'porsyar-popup';
 });
 
-const alertFunc = () => alert('سرویس پردازش صدا به زودی فعال می‌شود.');
+const alertFunc = () => alert(props.voiceAlertText);
 
-onMounted(async () => {
-  try {
-    const res = await axios.get(`${props.apiEndpoint}/settings`);
-    if(res.data.bot_name) apiSettings.value.bot_name = res.data.bot_name;
-    if(res.data.primary_color) apiSettings.value.primary_color = res.data.primary_color;
-    if(res.data.display_mode) displayMode.value = res.data.display_mode;
-    if(res.data.auth_required && !res.data.is_logged_in) needsLoginNotice.value = true;
-  } catch(e) {}
-  messages.value.push({ text: '👋 سلام! به گفتگوی هوشمند خوش آمدید.', isUser: false, time: getCurrentTime(), isTyping: false, displayedText: '👋 سلام! به گفتگوی هوشمند خوش آمدید.' });
+// پوش کردن پیام اولیه به صورت داینامیک
+onMounted(() => {
+  messages.value.push({
+    text: props.initialMessage,
+    isUser: false,
+    time: getCurrentTime(),
+    isTyping: false,
+    displayedText: props.initialMessage
+  });
 });
 
-const getCurrentTime = () => { const d = new Date(); return d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes(); };
-const scrollToBottom = async () => { await nextTick(); if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight; };
+const getCurrentTime = () => {
+  const d = new Date();
+  return d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+};
+const scrollToBottom = async () => {
+  await nextTick();
+  if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+};
 const formatText = (text) => text ? text.replace(/\n/g, '<br>') : '';
+
 const clearChat = async () => {
-  if(!confirm('آیا از پاک کردن تاریخچه گفتگو مطمئن هستید؟')) return;
+  if (!confirm(props.clearConfirmText)) return;
   try {
     await axios.post(`${props.apiEndpoint}/clear`);
-    messages.value = [{ text: 'تاریخچه پاک شد.', isUser: false, time: getCurrentTime(), isTyping: false, displayedText: 'تاریخچه پاک شد.' }];
-  } catch(e) {}
+    messages.value = [{
+      text: props.historyClearedText,
+      isUser: false,
+      time: getCurrentTime(),
+      isTyping: false,
+      displayedText: props.historyClearedText
+    }];
+  } catch (e) {
+  }
 };
 
 const typeText = async (msgObj) => {
   msgObj.isTyping = true;
   msgObj.displayedText = '';
   const fullText = msgObj.text;
-
   for (let i = 0; i <= fullText.length; i++) {
     msgObj.displayedText = fullText.substring(0, i);
     await new Promise(resolve => setTimeout(resolve, 20));
     if (i % 4 === 0) scrollToBottom();
   }
-
   msgObj.isTyping = false;
   scrollToBottom();
 };
@@ -139,15 +205,15 @@ const typeText = async (msgObj) => {
 const sendMessage = async () => {
   if (!input.value.trim() || needsLoginNotice.value) return;
   const userMsg = input.value;
-  messages.value.push({ text: userMsg, isUser: true, time: getCurrentTime() });
+  messages.value.push({text: userMsg, isUser: true, time: getCurrentTime()});
   input.value = '';
   isLoading.value = true;
   if (!props.inline && !isOpen.value) isOpen.value = true;
   scrollToBottom();
 
   try {
-    const response = await axios.post(`${props.apiEndpoint}/chat`, { message: userMsg });
-    const replyText = response.data.reply || 'پاسخی دریافت نشد.';
+    const response = await axios.post(`${props.apiEndpoint}/chat`, {message: userMsg});
+    const replyText = response.data.reply || props.noResponseText;
 
     const botMsg = {
       text: replyText,
@@ -168,12 +234,12 @@ const sendMessage = async () => {
   } catch (error) {
     isLoading.value = false;
     if (error.response && error.response.status === 401) {
-      messages.value.push({ text: 'برای ادامه باید وارد شوید.', isUser: false, time: getCurrentTime() });
+      messages.value.push({text: props.authErrorText, isUser: false, time: getCurrentTime()});
       needsLoginNotice.value = true;
     } else if (error.response && error.response.status === 429) {
-      messages.value.push({ text: 'سقف مجاز روزانه پر شده است.', isUser: false, time: getCurrentTime() });
+      messages.value.push({text: props.rateLimitText, isUser: false, time: getCurrentTime()});
     } else {
-      messages.value.push({ text: 'خطا در ارتباط.', isUser: false, time: getCurrentTime() });
+      messages.value.push({text: props.errorText, isUser: false, time: getCurrentTime()});
     }
   } finally {
     scrollToBottom();
@@ -183,7 +249,7 @@ const sendMessage = async () => {
 
 <style scoped>
 .porsyar-ai-wrapper {
-  font-family: Tahoma, "IranSans", "Segoe UI", sans-serif;
+  font-family: inherit;
   box-sizing: border-box;
 }
 
@@ -299,12 +365,15 @@ const sendMessage = async () => {
     bottom: 85px;
     height: 500px;
   }
+
   .porsyar-popup.pos-right {
     right: 5%;
   }
+
   .porsyar-popup.pos-left {
     left: 5%;
   }
+
   .porsyar-sidebar {
     width: 100vw;
   }
@@ -399,15 +468,6 @@ const sendMessage = async () => {
   background: #f3f4f6;
 }
 
-.porsyar-empty {
-  text-align: center;
-  color: #6b7280;
-  margin-top: auto;
-  margin-bottom: auto;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
 .porsyar-msg-wrapper {
   display: flex;
   flex-direction: column;
@@ -458,67 +518,97 @@ const sendMessage = async () => {
   animation: p-blink 1s step-end infinite;
 }
 
-/* استایل‌های جدید کارت‌های دیتابیس جایگزین شدند */
-.porsyar-suggestions-cards {
+.porsyar-suggestions-slider {
   margin-top: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 90%;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
 }
 
-.p-card-item {
+.porsyar-suggestions-slider::-webkit-scrollbar {
+  height: 4px;
+}
+
+.porsyar-suggestions-slider::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.p-card-carousel {
+  flex: 0 0 160px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 12px 16px;
   text-decoration: none;
   color: inherit;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
 }
 
-.p-card-item:hover {
+.p-card-carousel:hover {
   border-color: var(--primary-color);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
 }
 
-.p-card-content {
+.p-card-img-wrapper {
+  width: 100%;
+  height: 120px;
+  background-color: #f9fafb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.p-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.p-card-placeholder svg {
+  width: 32px;
+  height: 32px;
+  color: #9ca3af;
+  opacity: 0.5;
+}
+
+.p-card-info {
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .p-card-badge {
   font-size: 10px;
   background: #eff6ff;
   color: var(--primary-color);
-  padding: 4px 8px;
+  padding: 3px 6px;
   border-radius: 6px;
   align-self: flex-start;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .p-card-title {
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 13px;
+  font-weight: 700;
   color: #374151;
-  line-height: 1.4;
-}
-
-.p-card-icon svg {
-  width: 20px;
-  height: 20px;
-  color: #9ca3af;
-  transition: color 0.3s;
-}
-
-.p-card-item:hover .p-card-icon svg {
-  color: var(--primary-color);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .porsyar-footer {
@@ -606,13 +696,21 @@ const sendMessage = async () => {
 }
 
 @keyframes p-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
-  70% { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(74, 222, 128, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
 }
 
 @keyframes p-blink {
-  50% { border-color: transparent; }
+  50% {
+    border-color: transparent;
+  }
 }
 
 .typing-dots span {
@@ -625,11 +723,20 @@ const sendMessage = async () => {
   animation: p-bounce 1.4s infinite ease-in-out both;
 }
 
-.typing-dots span:nth-child(1) { animation-delay: -0.32s; }
-.typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+.typing-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
 
 @keyframes p-bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 </style>
