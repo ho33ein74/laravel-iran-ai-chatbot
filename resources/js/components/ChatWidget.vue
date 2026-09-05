@@ -82,12 +82,6 @@
       </div>
 
       <div class="iran-ai-chatbot-footer">
-        <button class="p-mic-btn" title="ارسال صدا" @click="alertFunc">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2a3 3 0 00-3 3v7a3 3 0 006 0V5a3 3 0 00-3-3z"></path>
-            <path d="M19 10v2a7 7 0 01-14 0v-2M12 18.4v3.3M8 22h8"></path>
-          </svg>
-        </button>
         <input v-model="input" @keyup.enter="sendMessage" type="text" :disabled="needsLoginNotice" class="p-input"
                :placeholder="placeholderText">
         <button @click="sendMessage" :disabled="!input.trim() || needsLoginNotice"
@@ -640,19 +634,6 @@ const sendMessage = async () => {
 .p-input:disabled {
   background: #f3f4f6;
   cursor: not-allowed;
-}
-
-.p-mic-btn {
-  background: #eff6ff;
-  color: var(--primary-color);
-  border: none;
-  border-radius: 50%;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
 }
 
 .p-send-btn {

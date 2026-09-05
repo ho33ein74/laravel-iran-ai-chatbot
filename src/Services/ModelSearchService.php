@@ -7,42 +7,37 @@ class ModelSearchService {
         $modelsConfig = config('iran-ai-chatbot.models_search.searchable_models', []);
         if (empty($modelsConfig)) return [];
 
-        // 🌟 لیست بسیار جامع کلمات توقف (Stopwords) برای جلوگیری از سرچ بی‌مورد
-        $stopwords = [
-            // ضمایر و کلمات اشاره
+        // 🌟 کلمات توقف عمومی زبان فارسی (که در هر حوزه‌ای ثابت هستند)
+        $baseStopwords = [
             'من', 'تو', 'او', 'ما', 'شما', 'آنها', 'ایشان', 'این', 'آن', 'اینها', 'یک', 'یه', 'یکسری',
-            'از', 'به', 'با', 'بر', 'در', 'برای', 'تا', 'اما', 'اگر', 'چون', 'فقط', 'خیلی', 'کمی',
-
-            // افعال ربطی و پرکاربرد
+            'از', 'به', 'با', 'بر', 'در', 'برای', 'تا', 'اما', 'اگر', 'چون', 'فقط', 'خیلی', 'کمی', 'روی',
             'هستم', 'هستی', 'هست', 'است', 'هستیم', 'هستید', 'هستند', 'نیستم', 'نیستی', 'نیست',
             'دارم', 'داری', 'دارد', 'داریم', 'دارید', 'دارند', 'ندارم', 'نداری', 'ندارد',
             'شد', 'شده', 'میشه', 'نمیشه', 'میکنم', 'میکنی', 'میکند', 'میکنیم', 'میکنید', 'میکنند',
             'کردم', 'کردی', 'کرد', 'کرده', 'کنم', 'کنی', 'کند', 'کنیم', 'کنید', 'کنند',
             'میخوام', 'میخوای', 'میخواهد', 'میخواهیم', 'میخواهید', 'میخواهند', 'بگو', 'باشه', 'نباشه',
-
-            // کلمات پرسشی
             'چطور', 'چگونه', 'چطوری', 'چند', 'چنده', 'چی', 'چیه', 'چیست', 'چرا', 'کی', 'کجا', 'کدام', 'کدوم', 'آیا',
-
-            // کلمات تعارفی و پشتیبانی که نباید محصولی براشون سرچ بشه
             'سلام', 'درود', 'وقت', 'بخیر', 'خداحافظ', 'مرسی', 'ممنون', 'تشکر', 'لطفا', 'بیزحمت',
             'کمک', 'مشکل', 'خراب', 'ایراد', 'خطا', 'ارور', 'سوال', 'سایت', 'ربات', 'هوش', 'مصنوعی',
             'مقاله', 'خرید', 'قیمت', 'محصول', 'کالا', 'پشتیبانی', 'ارتباط'
         ];
 
-        // ۱. اول علائم نگارشی رو از جمله حذف می‌کنیم
+        // 🌟 خواندن کلمات توقف اختصاصی از فایل کانفیگ و ادغام با لیست پایه
+        $customStopwords = config('iran-ai-chatbot.models_search.custom_stopwords', []);
+        $stopwords = array_merge($baseStopwords, $customStopwords);
+
         $cleanQuery = str_replace(['?', '!', '.', '،', ':', '؛', '؟'], ' ', $query);
         $words = explode(' ', $cleanQuery);
         $searchKeywords = [];
 
-        // ۲. کلمات رو فیلتر می‌کنیم (هم بزرگتر از ۳ حرف باشن و هم تو لیست بالا نباشن)
         foreach ($words as $word) {
             $word = trim($word);
+            // بررسی کلمات در لیست ادغام‌شده
             if (mb_strlen($word) >= 3 && !in_array($word, $stopwords)) {
                 $searchKeywords[] = $word;
             }
         }
 
-        // ۳. اگر هیچ کلمه کلیدی مفیدی (مثل اسم برند یا محصول) باقی نموند، سرچ رو متوقف کن
         if (empty($searchKeywords)) return [];
 
         $results = [];
@@ -53,11 +48,15 @@ class ModelSearchService {
             $label = $config['label'] ?? class_basename($modelClass);
 
             $queryBuilder = $modelClass::query();
+
+            // جستجوی بسیار دقیق (منطق AND)
             $queryBuilder->where(function($q) use ($columns, $searchKeywords) {
-                foreach ($columns as $column) {
-                    foreach ($searchKeywords as $keyword) {
-                        $q->orWhere($column, 'LIKE', "%{$keyword}%");
-                    }
+                foreach ($searchKeywords as $keyword) {
+                    $q->where(function($subQ) use ($columns, $keyword) {
+                        foreach ($columns as $column) {
+                            $subQ->orWhere($column, 'LIKE', "%{$keyword}%");
+                        }
+                    });
                 }
             });
 

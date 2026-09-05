@@ -13,6 +13,8 @@ return [
 
     'models_search' => [
         'max_results' => env('IRAN_AI_SEARCH_LIMIT', 4),
+        // کلمات توقفی که ادمین می‌خواهد در جستجوی محصولات نادیده گرفته شوند
+        'custom_stopwords' => ['روشن', 'خاموش'],
         'searchable_models' => [
             //\App\Models\Product::class => [
            //    'columns' => ['title', 'description'],
@@ -39,6 +41,14 @@ return [
         'openai' => ['api_key' => env('OPENAI_API_KEY'), 'endpoint' => 'https://api.openai.com/v1/chat/completions', 'model' => 'gpt-4o-mini'],
         'gemini' => ['api_key' => env('GEMINI_API_KEY'), 'endpoint' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'],
         'local_offline' => ['endpoint' => env('LOCAL_AI_ENDPOINT', 'http://localhost:11434/api/generate'), 'model' => 'llama3'],
+    ],
+
+    'ui' => [
+        'primary_color' => env('IRAN_AI_UI_COLOR', '#1a56db'),
+        'bot_name' => env('IRAN_AI_BOT_NAME', 'دستیار هوشمند'),
+        'default_display_mode' => 'popup',
+        'default_layout' => 'bubble',
+        'save_history_browser' => env('IRAN_AI_SAVE_HISTORY', true),
     ],
 
     'system' => [

@@ -36,25 +36,36 @@ php artisan migrate
 تمام تنظیمات حیاتی سیستم، کلیدهای API و فعال/غیرفعال کردن امکانات هوشمند مستقیماً از طریق فایل `.env` پروژه شما انجام می‌شود:
 
 ```env
-# درایور پیش‌فرض (gapgpt, avalai, openai, gemini, local_offline)
+# ==========================================
+# تنظیمات اصلی چت‌بات
+# ==========================================
+# درایور پیش‌فرض: (avalai, gapgpt, openai, gemini, local_offline)
 IRAN_AI_DRIVER=gapgpt
-
-# تنظیمات مربوط به مدل GapGPT
-GAPGPT_API_KEY="توکن_شما"
-GAPGPT_ENDPOINT="[https://api.gapgpt.app/v1/chat/completions](https://api.gapgpt.app/v1/chat/completions)"
+# کلیدهای API سرویس‌دهنده‌ها
+AVALAI_API_KEY=""
+AVALAI_MODEL=""
+GAPGPT_API_KEY=""
 GAPGPT_MODEL="gpt-4o-mini"
+OPENAI_API_KEY=""
+OPENAI_MODEL=""
+GEMINI_API_KEY=""
+LOCAL_AI_ENDPOINT=""
+LOCAL_AI_MODEL=""
 
-# تنظیمات امنیتی، هوش مصنوعی و گاردریل‌ها
+# تنظیمات امنیتی، هوش مصنوعی و گاردریلها
 IRAN_AI_RAG_ENABLED=true
-IRAN_AI_MODELS_SEARCH=true
 IRAN_AI_PII_MASKING=true
 IRAN_AI_PROMPT_INJECTION=true
 IRAN_AI_MODERATION=true
+IRAN_AI_MODELS_SEARCH=true
 
 # تنظیمات محدودیت کاربری و لاگین
 IRAN_AI_AUTH_REQUIRED=false
-IRAN_AI_QUOTA_ENABLED=true
+IRAN_AI_QUOTA_ENABLED=false
 IRAN_AI_MAX_QUESTIONS=20
+IRAN_AI_SEARCH_LIMIT=20
+
+IRAN_AI_SYSTEM_PROMPT="شما یک دستیار هوشمند و مودب هستید. به سوالات کاربر به زبان فارسی و با احترام پاسخ دهید."
 
 ```
 
