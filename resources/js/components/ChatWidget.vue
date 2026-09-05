@@ -1,6 +1,7 @@
 <template>
   <div class="iran-ai-chatbot-ai-wrapper" :style="cssVars" dir="rtl">
-    <button v-if="!isOpen && !inline" @click="isOpen = true" :class="['iran-ai-chatbot-fab', `pos-${position}`]">
+    <!-- اضافه شدن شرط hideFab برای مخفی کردن دکمه پیش‌فرض -->
+    <button v-if="!isOpen && !inline && !hideFab" @click="isOpen = true" :class="['iran-ai-chatbot-fab', `pos-${position}`]">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
            stroke-linejoin="round">
         <path
@@ -14,7 +15,7 @@
           <div class="p-avatar">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
             </svg>
           </div>
           <div class="p-title-box">
@@ -29,7 +30,8 @@
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
             </svg>
           </button>
-          <button v-if="!inline" @click="isOpen = false">
+          <!-- اضافه شدن شرط hideCloseButton -->
+          <button v-if="!inline && !hideCloseButton" @click="isOpen = false">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 6L6 18M6 6l12 12"></path>
             </svg>
@@ -52,7 +54,8 @@
           </div>
 
           <!-- اسلایدر افقی نتایج جستجو -->
-          <div v-if="msg.suggestions && msg.suggestions.length > 0" class="iran-ai-chatbot-suggestions-slider">
+          <div v-if="msg.suggestions && msg.suggestions.length > 0"
+               class="iran-ai-chatbot-suggestions-slider">
             <a v-for="sug in msg.suggestions"
                :key="sug.id"
                :href="sug.url || '#'"
@@ -60,7 +63,7 @@
                class="p-card-carousel">
 
               <div class="p-card-img-wrapper">
-                <img v-if="sug.image" :src="sug.image" :alt="sug.title" class="p-card-img"/>
+                <img v-if="sug.image" :src="sug.image" :alt="sug.title" class="p-card-img" />
                 <div v-else class="p-card-placeholder">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -82,7 +85,8 @@
       </div>
 
       <div class="iran-ai-chatbot-footer">
-        <input v-model="input" @keyup.enter="sendMessage" type="text" :disabled="needsLoginNotice" class="p-input"
+        <input v-model="input" @keyup.enter="sendMessage" type="text" :disabled="needsLoginNotice"
+               class="p-input"
                :placeholder="placeholderText">
         <button @click="sendMessage" :disabled="!input.trim() || needsLoginNotice"
                 :class="['p-send-btn', (input.trim() && !needsLoginNotice) ? 'active' : '']">
@@ -97,81 +101,123 @@
 </template>
 
 <script setup>
-import {ref, onMounted, nextTick, computed} from 'vue';
-import axios from 'axios';
+import { ref, onMounted, nextTick, computed, watch } from "vue";
+import axios from "axios";
 
 axios.defaults.withCredentials = true;
 
 const props = defineProps({
-  // تنظیمات اصلی و ظاهری
-  apiEndpoint: {type: String, default: '/api/ai-chatbot'},
-  inline: {type: Boolean, default: false},
-  color: {type: String, default: '#1a56db'},
-  title: {type: String, default: 'دستیار هوشمند'},
-  position: {type: String, default: 'right'},
-  displayMode: {type: String, default: 'popup'}, // popup | sidebar | fullscreen
+  apiEndpoint: { type: String, default: "/api/ai-chatbot" },
+  inline: { type: Boolean, default: false },
+  color: { type: String, default: "#1a56db" },
+  title: { type: String, default: "دستیار هوشمند" },
+  position: { type: String, default: "right" },
+  displayMode: { type: String, default: "popup" },
+
+  hideFab: { type: Boolean, default: false },
+  defaultOpen: { type: Boolean, default: false },
+  hideCloseButton: { type: Boolean, default: false },
+
+  // اضافه شدن پراپ ذخیره تاریخچه مرورگر
+  saveHistory: { type: Boolean, default: true },
 
   // متون نمایشی (کاملاً داینامیک)
-  initialMessage: {type: String, default: '👋 سلام! به گفتگوی هوشمند خوش آمدید. سوالی دارید از من بپرسید!'},
-  placeholderText: {type: String, default: 'پیام خود را بنویسید...'},
-  voiceAlertText: {type: String, default: 'سرویس پردازش صدا به زودی فعال می‌شود.'},
+  initialMessage: { type: String, default: "👋 سلام! به گفتگوی هوشمند خوش آمدید. سوالی دارید از من بپرسید!" },
+  placeholderText: { type: String, default: "پیام خود را بنویسید..." },
+  voiceAlertText: { type: String, default: "سرویس پردازش صدا به زودی فعال می‌شود." },
 
   // متون مربوط به لاگین
-  loginText: {type: String, default: 'برای استفاده از این بخش باید ابتدا'},
-  loginLinkText: {type: String, default: 'وارد سایت شوید'},
-  loginUrl: {type: String, default: '/login'},
+  loginText: { type: String, default: "برای استفاده از این بخش باید ابتدا" },
+  loginLinkText: { type: String, default: "وارد سایت شوید" },
+  loginUrl: { type: String, default: "/login" },
 
   // پیام‌های سیستم و خطاها
-  clearConfirmText: {type: String, default: 'آیا از پاک کردن تاریخچه گفتگو مطمئن هستید؟'},
-  historyClearedText: {type: String, default: 'تاریخچه پاک شد.'},
-  noResponseText: {type: String, default: 'پاسخی دریافت نشد.'},
-  rateLimitText: {type: String, default: 'سقف مجاز روزانه پر شده است.'},
-  errorText: {type: String, default: 'خطا در ارتباط. لطفا دوباره تلاش کنید.'},
-  authErrorText: {type: String, default: 'برای ادامه باید وارد حساب کاربری خود شوید.'}
+  clearConfirmText: { type: String, default: "آیا از پاک کردن تاریخچه گفتگو مطمئن هستید؟" },
+  historyClearedText: { type: String, default: "تاریخچه پاک شد." },
+  noResponseText: { type: String, default: "پاسخی دریافت نشد." },
+  rateLimitText: { type: String, default: "سقف مجاز روزانه پر شده است." },
+  errorText: { type: String, default: "خطا در ارتباط. لطفا دوباره تلاش کنید." },
+  authErrorText: { type: String, default: "برای ادامه باید وارد حساب کاربری خود شوید." }
 });
 
-const isOpen = ref(false);
+// استفاده از پراپ defaultOpen برای تعیین وضعیت اولیه باز یا بسته بودن
+const isOpen = ref(props.defaultOpen);
 const isLoading = ref(false);
-const input = ref('');
+const input = ref("");
 const chatContainer = ref(null);
 const messages = ref([]);
 const needsLoginNotice = ref(false);
 
-const cssVars = computed(() => ({'--primary-color': props.color}));
+const cssVars = computed(() => ({ "--primary-color": props.color }));
 
 const displayModeClass = computed(() => {
-  if (props.displayMode === 'sidebar') return 'iran-ai-chatbot-sidebar';
-  if (props.displayMode === 'fullscreen') return 'iran-ai-chatbot-fullscreen';
-  return 'iran-ai-chatbot-popup';
+  if (props.displayMode === "sidebar") return "iran-ai-chatbot-sidebar";
+  if (props.displayMode === "fullscreen") return "iran-ai-chatbot-fullscreen";
+  return "iran-ai-chatbot-popup";
 });
 
 const alertFunc = () => alert(props.voiceAlertText);
 
-// پوش کردن پیام اولیه به صورت داینامیک
+// 🌟 ذخیره هوشمند در LocalStorage با هر بار تغییر آرایه پیام‌ها
+watch(messages, (newVal) => {
+  if (props.saveHistory) {
+    const toSave = newVal.map(m => ({
+      ...m,
+      isTyping: false,
+      displayedText: m.text
+    }));
+    localStorage.setItem("iran_ai_chat_history", JSON.stringify(toSave));
+  }
+}, { deep: true });
+
 onMounted(() => {
-  messages.value.push({
-    text: props.initialMessage,
-    isUser: false,
-    time: getCurrentTime(),
-    isTyping: false,
-    displayedText: props.initialMessage
-  });
+  // 🌟 گوش دادن به ایونت‌های خارجی برای باز و بسته کردن ربات از هر کجای سایت
+  window.addEventListener('open-ai-chat', () => { isOpen.value = true; });
+  window.addEventListener('close-ai-chat', () => { isOpen.value = false; });
+  window.addEventListener('toggle-ai-chat', () => { isOpen.value = !isOpen.value; });
+
+  let historyLoaded = false;
+
+  // تلاش برای لود کردن کش مرورگر
+  if (props.saveHistory) {
+    const savedData = localStorage.getItem("iran_ai_chat_history");
+    if (savedData) {
+      try {
+        messages.value = JSON.parse(savedData);
+        historyLoaded = true;
+        scrollToBottom();
+      } catch (e) {
+      }
+    }
+  }
+
+  // اگر کش خاموش بود یا قبلا پیامی نداشت، همون پیام پیش‌فرض رو نشون بده
+  if (!historyLoaded) {
+    messages.value.push({
+      text: props.initialMessage,
+      isUser: false,
+      time: getCurrentTime(),
+      isTyping: false,
+      displayedText: props.initialMessage
+    });
+  }
 });
 
 const getCurrentTime = () => {
   const d = new Date();
-  return d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+  return d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
 };
 const scrollToBottom = async () => {
   await nextTick();
   if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
 };
-const formatText = (text) => text ? text.replace(/\n/g, '<br>') : '';
+const formatText = (text) => text ? text.replace(/\n/g, "<br>") : "";
 
 const clearChat = async () => {
   if (!confirm(props.clearConfirmText)) return;
   try {
     await axios.post(`${props.apiEndpoint}/clear`);
+    // ریست کردن پیام‌ها باعث میشه واچر خود به خود کش LocalStorage رو هم پاک/ریست کنه
     messages.value = [{
       text: props.historyClearedText,
       isUser: false,
@@ -185,7 +231,7 @@ const clearChat = async () => {
 
 const typeText = async (msgObj) => {
   msgObj.isTyping = true;
-  msgObj.displayedText = '';
+  msgObj.displayedText = "";
   const fullText = msgObj.text;
   for (let i = 0; i <= fullText.length; i++) {
     msgObj.displayedText = fullText.substring(0, i);
@@ -199,14 +245,14 @@ const typeText = async (msgObj) => {
 const sendMessage = async () => {
   if (!input.value.trim() || needsLoginNotice.value) return;
   const userMsg = input.value;
-  messages.value.push({text: userMsg, isUser: true, time: getCurrentTime()});
-  input.value = '';
+  messages.value.push({ text: userMsg, isUser: true, time: getCurrentTime() });
+  input.value = "";
   isLoading.value = true;
   if (!props.inline && !isOpen.value) isOpen.value = true;
   scrollToBottom();
 
   try {
-    const response = await axios.post(`${props.apiEndpoint}/chat`, {message: userMsg});
+    const response = await axios.post(`${props.apiEndpoint}/chat`, { message: userMsg });
     const replyText = response.data.reply || props.noResponseText;
 
     const botMsg = {
@@ -214,7 +260,7 @@ const sendMessage = async () => {
       isUser: false,
       time: getCurrentTime(),
       isTyping: true,
-      displayedText: '',
+      displayedText: "",
       suggestions: response.data.suggestions || []
     };
 
@@ -228,12 +274,12 @@ const sendMessage = async () => {
   } catch (error) {
     isLoading.value = false;
     if (error.response && error.response.status === 401) {
-      messages.value.push({text: props.authErrorText, isUser: false, time: getCurrentTime()});
+      messages.value.push({ text: props.authErrorText, isUser: false, time: getCurrentTime() });
       needsLoginNotice.value = true;
     } else if (error.response && error.response.status === 429) {
-      messages.value.push({text: props.rateLimitText, isUser: false, time: getCurrentTime()});
+      messages.value.push({ text: props.rateLimitText, isUser: false, time: getCurrentTime() });
     } else {
-      messages.value.push({text: props.errorText, isUser: false, time: getCurrentTime()});
+      messages.value.push({ text: props.errorText, isUser: false, time: getCurrentTime() });
     }
   } finally {
     scrollToBottom();

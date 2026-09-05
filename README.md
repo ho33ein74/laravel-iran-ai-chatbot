@@ -18,7 +18,6 @@
 
 ```bash
 composer require unixscript/laravel-iran-ai-chatbot
-
 ```
 
 سپس فایل‌های پیکربندی و دارایی‌ها (Vue Components) را منتشر کرده و مایگریشن‌ها (صرفاً برای ذخیره تاریخچه چت‌ها) را اجرا کنید:
@@ -26,7 +25,6 @@ composer require unixscript/laravel-iran-ai-chatbot
 ```bash
 php artisan vendor:publish --provider="Unixscript\IranAiChatbot\IranAiServiceProvider"
 php artisan migrate
-
 ```
 
 ---
@@ -66,7 +64,6 @@ IRAN_AI_MAX_QUESTIONS=20
 IRAN_AI_SEARCH_LIMIT=20
 
 IRAN_AI_SYSTEM_PROMPT="شما یک دستیار هوشمند و مودب هستید. به سوالات کاربر به زبان فارسی و با احترام پاسخ دهید."
-
 ```
 
 ---
@@ -86,34 +83,33 @@ IRAN_AI_SYSTEM_PROMPT="شما یک دستیار هوشمند و مودب هست�
         ],
     ]
 ],
-
 ```
 
 ---
 
-## ۴. نحوه استفاده در فرانت‌اند (Vue 3) و شخصی‌سازی ظاهر
+## ۴. نحوه استفاده در فرانت‌اند (Vue 3) و سناریوهای نمایش
 
 ویجت چت‌بات به عنوان یک کامپوننت Vue طراحی شده است. تمام ظاهر، متون و پیام‌ها **مستقیماً از طریق پراپ‌ها (Props)** قابل شخصی‌سازی است. تنظیماتی که در فایل کانفیگ به عنوان `ui` قرار دارند، صرفاً مقادیر پیش‌فرض (Fallback) هستند.
 
-کامپوننت را در فایل `app.js` رجیستر کنید:
+ابتدا کامپوننت را در فایل `app.js` رجیستر کنید:
 
 ```javascript
 import ChatWidget from './vendor/iran-ai-chatbot/ChatWidget.vue';
 app.component('chat-widget', ChatWidget);
-
 ```
 
-### نمونه استفاده کامل و شخصی‌سازی شده در فایل Blade:
+### حالت‌های مختلف نمایش (Scenarios)
 
-شما می‌توانید بی‌نهایت چت‌بات با رنگ‌ها و پیام‌های مختلف در صفحات مختلف سایت خود داشته باشید:
+شما می‌توانید بسته به نیاز هر صفحه از سایت، چت‌بات را در شکل‌های متفاوتی فراخوانی کنید:
 
+**حالت اول: پاپ‌آپ شناور استاندارد (پیش‌فرض)**
+این حالت برای نمایش یک دکمه شناور در گوشه سایت استفاده می‌شود (با قابلیت شخصی‌سازی کامل پیام‌ها):
 ```html
 <chat-widget
     color="#e11d48"
     title="پشتیبانی ویژه"
     position="left"
     display-mode="popup"
-    :inline="false"
     
     initial-message="سلام دوست من! 👋 من دستیار هوشمند فروشگاه هستم. دنبال چه محصولی می‌گردی؟"
     placeholder-text="نام محصول یا سوالت رو اینجا بنویس..."
@@ -125,21 +121,59 @@ app.component('chat-widget', ChatWidget);
     error-text="ارتباط با سرور قطع شد، لطفا چند دقیقه دیگر تلاش کنید."
     rate-limit-text="تعداد پیام‌های شما امروز به اتمام رسیده است."
 ></chat-widget>
-
 ```
 
-### لیست کامل پراپ‌های (Props) ظاهری:
+**حالت دوم: صفحه اختصاصی تمام‌صفحه (Fullscreen)**
+مناسب برای زمانی که می‌خواهید یک صفحه مجزا (مثلاً `/support`) فقط برای چت‌بات بسازید. در این حالت دکمه‌های شناور و بستن مخفی می‌شوند:
+```html
+<chat-widget
+    display-mode="fullscreen"
+    :default-open="true"
+    :hide-fab="true"
+    :hide-close-button="true"
+></chat-widget>
+```
+
+**حالت سوم: باز شدن از طریق دکمه‌های دلخواه سایت (منوی Bottom Nav)**
+اگر می‌خواهید دکمه دایره‌ای پیش‌فرض مخفی باشد و ربات با کلیک روی منوی اختصاصی قالب شما باز شود:
+```html
+<!-- ۱. قرار دادن ویجت به صورت مخفی در Layout -->
+<chat-widget display-mode="sidebar" :hide-fab="true"></chat-widget>
+
+<!-- ۲. باز کردن ربات با دکمه دلخواه شما در فایل Blade -->
+<button onclick="window.dispatchEvent(new CustomEvent('toggle-ai-chat'))">
+    💬 چت با پشتیبانی
+</button>
+```
+
+**حالت چهارم: درون‌خطی و ثابت (Inline)**
+برای قرار دادن چت‌بات به صورت ثابت در وسط یک صفحه وبلاگ یا داخل یک فرم:
+```html
+<div class="col-md-8 mx-auto">
+    <chat-widget :inline="true" color="#10b981"></chat-widget>
+</div>
+```
+
+### لیست کامل پراپ‌های (Props) کنترلی و ظاهری:
 
 | نام پراپ | نوع | پیش‌فرض | توضیحات |
 | --- | --- | --- | --- |
-| `color` | String | (خوانده شده از کانفیگ) | رنگ اصلی چت‌بات (هدر، دکمه‌ها و...) |
-| `title` | String | (خوانده شده از کانفیگ) | عنوان بالای چت‌بات |
+| `color` | String | (از کانفیگ) | رنگ اصلی چت‌بات (هدر، دکمه‌ها و...) |
+| `title` | String | (از کانفیگ) | عنوان بالای چت‌بات |
+| `display-mode` | String | `popup` | نحوه نمایش (`popup`, `sidebar`, `fullscreen`) |
 | `position` | String | `right` | موقعیت ویجت شناور (`left` یا `right`) |
-| `display-mode` | String | `popup` | نحوه نمایش چت‌بات (`popup`, `sidebar`, `fullscreen`) |
-| `inline` | Boolean | `false` | نمایش درون‌خطی و ثابت به جای ویجت شناور |
-| `initial-message` | String | (پیام سلام) | پیامی که ربات در ابتدای باز شدن نمایش می‌دهد |
-| `placeholder-text` | String | `پیام خود را بنویسید...` | متن پس‌زمینه فیلد ورودی |
-| `login-url` | String | `/login` | آدرسی که کاربر در صورت نیاز به لاگین هدایت می‌شود |
+| `inline` | Boolean | `false` | نمایش درون‌خطی و ثابت به جای حالت شناور |
+| `hide-fab` | Boolean | `false` | مخفی کردن دکمه دایره‌ای شناور پیش‌فرض |
+| `default-open` | Boolean | `false` | باز بودن ویجت به محض بارگذاری صفحه |
+| `hide-close-button`| Boolean| `false` | مخفی کردن دکمه ضربدر در هدر ربات |
+| `save-history` | Boolean | `true` | ذخیره خودکار چت‌ها در LocalStorage مرورگر |
+| `initial-message` | String | (پیام سلام)| پیام پیش‌فرض ربات در ابتدای باز شدن |
+| `placeholder-text` | String | `پیام...` | متن پس‌زمینه فیلد ورودی پیام |
+| `login-text` | String | (متن پیش‌فرض)| متن هشدار قبل از لینک ورود به سایت |
+| `login-link-text` | String | `وارد سایت شوید` | کلمه‌ای که لینک‌دار می‌شود و کاربر روی آن کلیک می‌کند |
+| `login-url` | String | `/login` | آدرس صفحه‌ای که کاربر برای لاگین باید به آن هدایت شود |
+| `error-text` | String | (متن پیش‌فرض)| پیامی که در صورت قطعی اینترنت یا خطای سرور نمایش داده می‌شود |
+| `rate-limit-text` | String | (متن پیش‌فرض)| پیامی که در صورت پر شدن سقف سوالات روزانه کاربر نمایش داده می‌شود |
 
 ---
 
