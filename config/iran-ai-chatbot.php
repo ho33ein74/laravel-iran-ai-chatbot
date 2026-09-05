@@ -41,10 +41,7 @@ return [
         'local_offline' => ['endpoint' => env('LOCAL_AI_ENDPOINT', 'http://localhost:11434/api/generate'), 'model' => 'llama3'],
     ],
 
-    'ui' => [
-        'primary_color' => env('IRAN_AI_UI_COLOR', '#1a56db'),
-        'bot_name' => env('IRAN_AI_BOT_NAME', 'دستیار هوشمند'),
-        'default_display_mode' => 'popup',
-        'default_layout' => 'bubble',
-    ]
+    'system' => [
+        'prompt' => env('IRAN_AI_SYSTEM_PROMPT', 'شما یک دستیار هوشمند و مودب هستید. به سوالات کاربر به زبان فارسی و با احترام پاسخ دهید.'),
+    ],
 ];
